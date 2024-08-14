@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
       printf("Short option %s\n", argv[i]);
     }
     else {
-      printf("found arguments, argv[i]\n");
+      printf("found arguments, %s\n", argv[i]);
     }
   }
   return 0;
