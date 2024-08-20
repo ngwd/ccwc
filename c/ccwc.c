@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
-void process_lines(const char* file);
+void process_lines(const char*, bool, bool, bool);
+
 int main(int argc, char* argv[]) {
-  char count_byte = 0;
-  char count_word = 0;
-  char* file = NULL;
+  bool count_byte = false;
+  bool count_word = false;
+  bool count_line = false;
   for(int i = 1; i<argc; ++i) {
     char* key = NULL;
     char* val = "";
@@ -20,43 +22,57 @@ int main(int argc, char* argv[]) {
     }
     else if (strncmp(argv[i], "-", 1) == 0) { // short form of argument will not come with value 
       key = &argv[i][1];
-      /*
-      if (i+1 < argc && argv[i+1][0] != '-') {
-        val = argv[i+1]; 
-        ++i; 
-      }
-      */
       printf("Short %s:%s\n", key, val);
       switch (key[0]) {
-        case 'c':
-          count_byte = 1;
-          break;
-        default:
-          break;
+        case 'c': count_byte = true; break;
+        case 'l': count_line = true; break;
+        case 'w': count_word = true; break;
+        default: break;
       }
     }
     else {
-      printf("found arguments, %s\n", argv[i]);
-      file = &argv[i];
+      if (!count_byte && !count_line && !count_word) {
+        count_byte = count_line = count_word = true;
+      }
+      process_lines(argv[i], count_byte, count_line, count_word);
     }
   }
 
-  process_lines(file);
   return 0;
 }
-void process_lines(const char* file){
+void process_lines(const char* file, bool count_byte, bool count_line, bool count_word) {
   FILE* f = fopen(file, "r");
   if (f == NULL) {
     perror("error: opening file");
     return;
   }
   char* line = NULL;
-  size_t len = 0, read, byte_count = 0;
+  size_t len = 0, read, bytes = 0, words = 0, lines = 0;
   while ((read = getline(&line, &len, f)) != -1) {
-    printf("%c%c\n", line[read-2], line[read-1]);
-    byte_count += read;
+    ++lines;
+    bytes += read;
+
+    char prev = ' ';
+    size_t word_line = 0;
+    for(int i = 0; i<read; ++i) {
+      if (line[i] != ' ' && prev == ' ') {
+        ++word_line;
+      }
+      prev = line[i];
+    }
+    words += word_line;
+
   }
-  printf("byte count %ld\n", byte_count);
+  if (count_line) {
+    printf(" %ld", lines);
+  }
+  if (count_word) {
+    printf(" %ld", words);
+  }
+  if (count_byte) {
+    printf(" %ld", bytes);
+  }
+  printf(" %s\n", file);
   free(line);
   fclose(f);
 }
