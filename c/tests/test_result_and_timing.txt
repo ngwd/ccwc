@@ -1,0 +1,12 @@
+hwd@DESKTOP-JAEFDO3:~/prj/ccwc/c$ time seq 1 300000 | xargs -Inone cat test.txt | wc
+22200000 1117200001 25731900000
+
+real    4m39.633s
+user    5m11.471s
+sys     0m54.552s
+hwd@DESKTOP-JAEFDO3:~/prj/ccwc/c$ time seq 1 300000 | xargs -Inone cat test.txt | ./ccwc
+        22200000        1117200001      25731900000
+real    4m45.399s
+user    4m52.638s
+sys     1m8.532s
+hwd@DESKTOP-JAEFDO3:~/prj/ccwc/c$ 

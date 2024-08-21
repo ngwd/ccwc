@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   bool file_present = false;
   for(int i = 1; i<argc; ++i) {
     char* key = NULL;
-    char* val = "";
+    const char* val = "";
     if (strncmp(argv[i], "--", 2) == 0) {
       key = &argv[i][2];
       if (i+1 < argc && argv[i+1][0] != '-') {
@@ -49,30 +49,39 @@ int main(int argc, char* argv[]) {
   }
   return 0;
 }
-void process_blocks( bool count_byte, bool count_line, bool count_word ) {
-  size_t len = 0, read, bytes = 0, words = 0, lines = 0;
-  char buffer[256];
+void 
+process_blocks( bool count_byte, bool count_line, bool count_word ) 
+{
+  size_t bytes = 0, words = 0, lines = 0;
+  const int BUFLEN = 2048;
+  char buffer[BUFLEN];
   char prev = ' ';
-  while (fgets(buffer, sizeof(buffer), stdin)!=NULL) {
-    len = strlen(buffer);
-    bytes += len; 
+  while (fgets(buffer, sizeof(buffer), stdin) != NULL) 
+  {
     size_t word_line = 0;
-    for(int i = 0; i<len; ++i) {
-      if (buffer[i] != ' ' && buffer[i] != '\n' && buffer[i] != '\r') {
-        if (prev == ' ' || prev == '\n' || prev == '\r') {
+    int i; 
+    for(i = 0; i<BUFLEN && buffer[i] != '\0'; ++i) 
+    {
+      if (buffer[i] != ' ' && buffer[i] != '\n' && buffer[i] != '\r') 
+      {
+        if (prev == ' ' || prev == '\n' || prev == '\r') 
+        {
           ++word_line;
         }
       }
-      else if (buffer[i] == '\n') {
+      else if (buffer[i] == '\n') 
+      {
         ++lines;
       }
       prev = buffer[i];
     }
+    bytes += i;
+
     words += word_line;
   }
-  PRINT(count_line, "\t%zu", lines);
-  PRINT(count_word, "\t%zu", words);
-  PRINT(count_byte, "\t%zu", bytes);
+  PRINT(count_line, " %zu", lines);
+  PRINT(count_word, " %zu", words);
+  PRINT(count_byte, " %zu", bytes);
   printf("\n");
 }
 
@@ -90,17 +99,22 @@ void process_files( bool count_byte, bool count_line, bool count_word, const cha
 
     char prev = ' ';
     size_t word_line = 0;
-    for(int i = 0; i<read; ++i) {
-      if (line[i] != ' ' && prev == ' ') {
-        ++word_line;
+    for(size_t i = 0; i<read; ++i) {
+      if (line[i] != ' ' && line[i] != '\n' && line[i] != '\r' ) {
+        // if ( prev == ' ') 
+        if (prev == ' ' || prev == '\n' || prev == '\r') 
+        {
+          ++word_line;
+        }
       }
       prev = line[i];
     }
     words += word_line;
   }
-  PRINT(count_line, "%zu", lines);
-  PRINT(count_word, "%zu", words);
-  PRINT(count_byte, "%zu", bytes);
+
+  PRINT(count_line, " %zu", lines);
+  PRINT(count_word, " %zu", words);
+  PRINT(count_byte, " %zu", bytes);
   printf(" %s\n", file);
   free(line);
   fclose(f);
