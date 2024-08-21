@@ -3,12 +3,15 @@
 #include <string.h>
 #include <stdbool.h>
 
-void process_lines(const char*, bool, bool, bool);
+void process_files(bool, bool, bool, const char*);
+void process_blocks(bool, bool, bool);
+#define PRINT(b,f,n) do {if (b) printf(f, n); } while(0)
 
 int main(int argc, char* argv[]) {
   bool count_byte = false;
   bool count_word = false;
   bool count_line = false;
+  bool file_present = false;
   for(int i = 1; i<argc; ++i) {
     char* key = NULL;
     char* val = "";
@@ -22,32 +25,65 @@ int main(int argc, char* argv[]) {
     }
     else if (strncmp(argv[i], "-", 1) == 0) { // short form of argument will not come with value 
       key = &argv[i][1];
-      printf("Short %s:%s\n", key, val);
       switch (key[0]) {
         case 'c': count_byte = true; break;
         case 'l': count_line = true; break;
         case 'w': count_word = true; break;
         default: break;
       }
+      printf("Short %s:%s\n", key, val);
     }
     else {
       if (!count_byte && !count_line && !count_word) {
         count_byte = count_line = count_word = true;
       }
-      process_lines(argv[i], count_byte, count_line, count_word);
+      process_files(count_byte, count_line, count_word, argv[i]);
+      file_present = true;
     }
   }
-
+  if (!file_present) {
+    if (!count_byte && !count_line && !count_word) {
+      count_byte = count_line = count_word = true;
+    }
+    process_blocks(count_byte, count_line, count_word);
+  }
   return 0;
 }
-void process_lines(const char* file, bool count_byte, bool count_line, bool count_word) {
+void process_blocks( bool count_byte, bool count_line, bool count_word ) {
+  size_t len = 0, read, bytes = 0, words = 0, lines = 0;
+  char buffer[256];
+  char prev = ' ';
+  while (fgets(buffer, sizeof(buffer), stdin)!=NULL) {
+    len = strlen(buffer);
+    bytes += len; 
+    size_t word_line = 0;
+    for(int i = 0; i<len; ++i) {
+      if (buffer[i] != ' ' && buffer[i] != '\n' && buffer[i] != '\r') {
+        if (prev == ' ' || prev == '\n' || prev == '\r') {
+          ++word_line;
+        }
+      }
+      else if (buffer[i] == '\n') {
+        ++lines;
+      }
+      prev = buffer[i];
+    }
+    words += word_line;
+  }
+  PRINT(count_line, "\t%zu", lines);
+  PRINT(count_word, "\t%zu", words);
+  PRINT(count_byte, "\t%zu", bytes);
+  printf("\n");
+}
+
+void process_files( bool count_byte, bool count_line, bool count_word, const char* file ) {
+  size_t len = 0, read, bytes = 0, words = 0, lines = 0;
   FILE* f = fopen(file, "r");
   if (f == NULL) {
     perror("error: opening file");
     return;
   }
   char* line = NULL;
-  size_t len = 0, read, bytes = 0, words = 0, lines = 0;
   while ((read = getline(&line, &len, f)) != -1) {
     ++lines;
     bytes += read;
@@ -61,17 +97,10 @@ void process_lines(const char* file, bool count_byte, bool count_line, bool coun
       prev = line[i];
     }
     words += word_line;
-
   }
-  if (count_line) {
-    printf(" %ld", lines);
-  }
-  if (count_word) {
-    printf(" %ld", words);
-  }
-  if (count_byte) {
-    printf(" %ld", bytes);
-  }
+  PRINT(count_line, "%zu", lines);
+  PRINT(count_word, "%zu", words);
+  PRINT(count_byte, "%zu", bytes);
   printf(" %s\n", file);
   free(line);
   fclose(f);
