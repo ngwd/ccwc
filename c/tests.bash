@@ -12,13 +12,15 @@ n3=$(normalize "$(cat "$input_file"|./ccwc) $input_file")
 
 # Compare the normalized sentences
 if [ "$n1" = "$n2" ]; then
-    echo "test good on $input_file in line reading manner"
+    echo "$input_file line reading : OK"
 else
+    echo "$input_file line reading : bad"
     diff "$n1" "$n2"
 fi
 
 if [ "$n2" = "$n3" ]; then
-    echo "test good on $input_file in fgets block reading manner"
+    echo "$input_file block reading : OK"
 else
+    echo "$input_file block reading : bad"
     diff "$n2" "$n3"
 fi

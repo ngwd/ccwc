@@ -17,22 +17,21 @@ DEPS := $(OBJS:.o=.d)
 
 # Build it all
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	#$(CXX) $(OBJS) -o $@ $(LDFLAGS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)/%.c.o: %.c
 	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	$(CC) -c $< -o $@
 
 #clean:
 #	rm -r $(BUILD_DIR)
 
 test:
-	./tests.bash $(INC_DIR)unix.txt
-	./tests.bash $(INC_DIR)unix1.txt
-	./tests.bash $(INC_DIR)dos.txt
-	./tests.bash $(INC_DIR)test2.txt
-	./tests.bash $(INC_DIR)CJP.txt
+	./tests.bash $(INC_DIRS)unix.txt
+	./tests.bash $(INC_DIRS)unix1.txt
+	./tests.bash $(INC_DIRS)dos.txt
+	./tests.bash $(INC_DIRS)test2.txt
+	./tests.bash $(INC_DIRS)CJP.txt
 
 patch:
 	git add .
