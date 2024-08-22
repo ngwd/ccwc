@@ -70,6 +70,8 @@ process_blocks( bool count_byte, bool count_line, bool count_word )
         }
       }
       else if (buffer[i] == '\n') 
+      // else if (buffer[i-1] == '\n' && i>2 && buffer[i-2] == '\r')  // for dos file 
+      // else if (buffer[i-1] == '\r')  // for older mac file 
       {
         ++lines;
       }
@@ -94,14 +96,12 @@ void process_files( bool count_byte, bool count_line, bool count_word, const cha
   }
   char* line = NULL;
   while ((read = getline(&line, &len, f)) != -1) {
-    ++lines;
     bytes += read;
 
     char prev = ' ';
-    size_t word_line = 0;
-    for(size_t i = 0; i<read; ++i) {
+    size_t word_line = 0, i;
+    for(i = 0; i<read; ++i) {
       if (line[i] != ' ' && line[i] != '\n' && line[i] != '\r' ) {
-        // if ( prev == ' ') 
         if (prev == ' ' || prev == '\n' || prev == '\r') 
         {
           ++word_line;
@@ -109,6 +109,10 @@ void process_files( bool count_byte, bool count_line, bool count_word, const cha
       }
       prev = line[i];
     }
+    if (line[i-1] == '\n')  // for linux file
+    // if (line[i-1] == '\n' && i>2 && line[i-2] == '\r')  // for dos file 
+    // if (line[i-1] == '\r')  // for older mac file 
+      ++lines;
     words += word_line;
   }
 

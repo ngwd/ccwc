@@ -32,7 +32,9 @@ test:
 	./tests.bash $(INC_DIRS)dos.txt
 	./tests.bash $(INC_DIRS)test2.txt
 	./tests.bash $(INC_DIRS)CJP.txt
-
+	./tests.bash $(INC_DIRS)C.txt
+	./tests.bash $(INC_DIRS)C1.txt
+	
 patch:
 	git add .
 	#git diff --binary origin/main > p1.patch
